@@ -8,6 +8,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     group_key.bench_function("edwards new", |b| b.iter(|| generate::<Ed25519KeyPair>(None)));
     group_key.bench_function("montgomery new", |b| b.iter(|| generate::<X25519KeyPair>(None)));
     group_key.bench_function("p256 new", |b| b.iter(|| generate::<P256KeyPair>(None)));
+    #[cfg(feature = "signature_bls_feat")]
     group_key.bench_function("bls new", |b| b.iter(|| generate::<Bls12381KeyPairs>(None)));
 
     group_key.finish();
@@ -37,6 +38,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     ];
 
     let ed_key = generate::<Ed25519KeyPair>(None);
+    #[cfg(feature = "signature_bls_feat")]
     let bls_key = generate::<Bls12381KeyPairs>(None);
     let p256_key = generate::<P256KeyPair>(None);
 
@@ -51,6 +53,7 @@ fn criterion_benchmark(c: &mut Criterion) {
             b.iter(|| p256_key.sign(payload.data))
         });
 
+        #[cfg(feature = "signature_bls_feat")]
         group_sign.bench_with_input(BenchmarkId::new("bls sign", payload.data.len()), &payload, |b, &payload| {
             b.iter(|| bls_key.sign(payload.data))
         });

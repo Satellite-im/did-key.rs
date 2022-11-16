@@ -14,6 +14,7 @@ pub enum KeyPair {
     Ed25519(Ed25519KeyPair),
     X25519(X25519KeyPair),
     P256(P256KeyPair),
+    #[cfg(feature = "signature_bls_feat")]
     Bls12381G1G2(Bls12381KeyPairs),
     Secp256k1(Secp256k1KeyPair),
 }
@@ -196,6 +197,7 @@ impl CoreSign for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.sign(payload),
             KeyPair::X25519(x) => x.sign(payload),
             KeyPair::P256(x) => x.sign(payload),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.sign(payload),
             KeyPair::Secp256k1(x) => x.sign(payload),
         }
@@ -206,6 +208,7 @@ impl CoreSign for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.verify(payload, signature),
             KeyPair::X25519(x) => x.verify(payload, signature),
             KeyPair::P256(x) => x.verify(payload, signature),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.verify(payload, signature),
             KeyPair::Secp256k1(x) => x.verify(payload, signature),
         }
@@ -228,6 +231,7 @@ impl DIDCore for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.get_verification_methods(config, controller),
             KeyPair::X25519(x) => x.get_verification_methods(config, controller),
             KeyPair::P256(x) => x.get_verification_methods(config, controller),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.get_verification_methods(config, controller),
             KeyPair::Secp256k1(x) => x.get_verification_methods(config, controller),
         }
@@ -238,6 +242,7 @@ impl DIDCore for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.get_did_document(config),
             KeyPair::X25519(x) => x.get_did_document(config),
             KeyPair::P256(x) => x.get_did_document(config),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.get_did_document(config),
             KeyPair::Secp256k1(x) => x.get_did_document(config),
         };
@@ -254,6 +259,7 @@ impl KeyMaterial for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.public_key_bytes(),
             KeyPair::X25519(x) => x.public_key_bytes(),
             KeyPair::P256(x) => x.public_key_bytes(),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.public_key_bytes(),
             KeyPair::Secp256k1(x) => x.public_key_bytes(),
         }
@@ -264,6 +270,7 @@ impl KeyMaterial for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.private_key_bytes(),
             KeyPair::X25519(x) => x.private_key_bytes(),
             KeyPair::P256(x) => x.private_key_bytes(),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.private_key_bytes(),
             KeyPair::Secp256k1(x) => x.private_key_bytes(),
         }
@@ -276,6 +283,7 @@ impl Fingerprint for PatchedKeyPair {
             KeyPair::Ed25519(x) => x.fingerprint(),
             KeyPair::X25519(x) => x.fingerprint(),
             KeyPair::P256(x) => x.fingerprint(),
+            #[cfg(feature = "signature_bls_feat")]
             KeyPair::Bls12381G1G2(x) => x.fingerprint(),
             KeyPair::Secp256k1(x) => x.fingerprint(),
         }
@@ -314,6 +322,7 @@ impl TryFrom<&str> for PatchedKeyPair {
         let key_pair = match pub_key[0..2] {
             [0xed, 0x1] => Ok(KeyPair::Ed25519(Ed25519KeyPair::from_public_key(&pub_key[2..]))),
             [0xec, 0x1] => Ok(KeyPair::X25519(X25519KeyPair::from_public_key(&pub_key[2..]))),
+            #[cfg(feature = "signature_bls_feat")]
             [0xee, 0x1] => Ok(KeyPair::Bls12381G1G2(Bls12381KeyPairs::from_public_key(&pub_key[2..]))),
             [0x80, 0x24] => Ok(KeyPair::P256(P256KeyPair::from_public_key(&pub_key[2..]))),
             [0xe7, 0x1] => Ok(KeyPair::Secp256k1(Secp256k1KeyPair::from_public_key(&pub_key[2..]))),
@@ -398,7 +407,6 @@ impl From<&KeyFormat> for PatchedKeyPair {
     }
 }
 
-mod bls12381;
 mod didcore;
 mod ed25519;
 mod p256;
@@ -408,7 +416,6 @@ mod x25519;
 pub use {
     crate::p256::P256KeyPair,
     crate::secp256k1::Secp256k1KeyPair,
-    bls12381::Bls12381KeyPairs,
     didcore::{
         Config, Document, JWSHeader, KeyFormat, VerificationMethod, CONFIG_JOSE_PRIVATE, CONFIG_JOSE_PUBLIC, CONFIG_LD_PRIVATE, CONFIG_LD_PUBLIC,
         JWK, JWS,
@@ -466,6 +473,7 @@ pub mod test {
         assert!(true)
     }
 
+    #[cfg(feature = "signature_bls_feat")]
     #[test]
     fn test_did_doc_json_bls() {
         let key = generate::<Bls12381KeyPairs>(None);
